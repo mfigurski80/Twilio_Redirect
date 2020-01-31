@@ -14,9 +14,11 @@ class Number():
             'TWILIO_REGION_CODE') + os.environ.get('TWILIO_NUMBER')
         self.target_number = target
 
-    def send_message(self, message_body):
+    def send_message(self, message_body, target_number=None):
+        if target_number is None:
+            target_number = self.target_number
         return self.client.messages.create(
-            to=self.target_number,
+            to=target_number,
             from_=self.number,
             body=message_body
         )
@@ -37,8 +39,19 @@ if __name__ == '__main__':
     a = Number(target_number)
 
     if len(sys.argv) > 1:
-        message = ' '.join(sys.argv[1:])
-        a.send_message(message)
+        args = sys.argv[1:]
+        number = None
+        message = ' '.join(args)
+
+        # check if first arg is a phone number...
+        if args[0][1:].isdigit() and len(args[0]) >= 10:
+            number = args[0]
+            message = ' '.join(args[1:])
+            if not number[0] is '+':
+                number = f'+1{number}'
+
+        a.send_message(message, number)
+
     else:
         messages = a.read_messages()
         for m in messages:

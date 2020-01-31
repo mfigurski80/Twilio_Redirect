@@ -24,11 +24,29 @@ class Number():
         )
 
     def read_messages(self):
-        return reversed(self.client.messages.list())
+        return list(reversed(self.client.messages.list()))
+
+    def read_new_messages(self):
+        messages = self.read_messages()
+        num_seen = self.read_seen()
+        self.write_seen(len(messages))
+        return messages[num_seen:]
 
     @staticmethod
     def print_message(m):
         print(f'[{m.from_}] : {m.body}')
+
+    def read_seen(self):
+        with open('seen.txt', 'r') as f:
+            content = f.read()
+            f.close()
+            content = int(content)
+            return content
+
+    def write_seen(self, seen):
+        with open('seen.txt', 'w') as f:
+            f.write(str(seen))
+            f.close()
 
 
 if __name__ == '__main__':
@@ -53,6 +71,6 @@ if __name__ == '__main__':
         a.send_message(message, number)
 
     else:
-        messages = a.read_messages()
+        messages = a.read_new_messages()
         for m in messages:
             a.print_message(m)

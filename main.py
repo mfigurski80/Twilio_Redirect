@@ -30,10 +30,16 @@ class Number():
 
 
 if __name__ == '__main__':
+    import sys
+
     target_number = os.environ.get(
         'REDIRECT_REGION_CODE') + os.environ.get('REDIRECT_NUMBER')
     a = Number(target_number)
 
-    messages = a.read_messages()
-    for m in messages:
-        a.print_message(m)
+    if len(sys.argv) > 1:
+        message = ' '.join(sys.argv[1:])
+        a.send_message(message)
+    else:
+        messages = a.read_messages()
+        for m in messages:
+            a.print_message(m)

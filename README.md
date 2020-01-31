@@ -21,8 +21,8 @@ Additionally, you will need to configure a .env file in `<DIRECTORY>` that will 
 
 Arguments passable to main.py
 
-- `` : will display all new texts
+- ` ` : will display all new texts
 - `Hello World` : will send message 'Hello World' to default target phone number
 - `1234567890 Hello World` : will send message 'Hello World' to number '+1 (123) 456 7890'
-- `+11234567890 Hello World : will send message 'Hello World' to number '+1 (123) 456 7890'
+- `+11234567890 Hello World` : will send message 'Hello World' to number '+1 (123) 456 7890'
 

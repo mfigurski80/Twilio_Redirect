@@ -23,30 +23,60 @@ class Number():
             body=message_body
         )
 
-    def read_messages(self):
+    def get_messages(self):
         return list(reversed(self.client.messages.list()))
 
-    def read_new_messages(self):
-        messages = self.read_messages()
-        num_seen = self.read_seen()
-        self.write_seen(len(messages))
-        return messages[num_seen:]
+    def get_conversations(self):
+        messages = self.get_messages()
+        conversations = {}
+        for m in messages:
+            # get conversant
+            conversant = m.to
+            if conversant == self.number:
+                conversant = m.from_
+            # enter into respective conversation
+            if conversant not in conversations:
+                conversations[conversant] = []
+            conversations[conversant] += [m]
+        return conversations
+
+    def get_new_conversations(self):
+        conversations = self.get_conversations()
+        seen = self.read_seen_conversations()
+        processed_conversations = {}
+        for conv in conversations:
+            if conv in seen and seen[conv] < len(conversations[conv]):
+                # show last three as well
+                processed_conversations[conv] = conversations[conv][seen[conv] - 3:]
+        self.write_seen_conversations(conversations)
+        return processed_conversations
+
+    def write_seen_conversations(self, conversations):
+        with open('seen.txt', 'w') as f:
+            for c in conversations:
+                f.write(c + ', ' + str(len(conversations[c])))
+
+    def read_seen_conversations(self):
+        with open('seen.txt', 'r') as f:
+            content = f.read().split('\n')
+            f.close()
+            num_conversations = {}
+            for line in content:
+                conv = line.split(', ')
+                num_conversations[conv[0]] = int(conv[1])
+            return num_conversations
 
     @staticmethod
-    def print_message(m):
-        print(f'[{m.from_}] : {m.body}')
-
-    def read_seen(self):
-        with open('seen.txt', 'r') as f:
-            content = f.read()
-            f.close()
-            content = int(content)
-            return content
-
-    def write_seen(self, seen):
-        with open('seen.txt', 'w') as f:
-            f.write(str(seen))
-            f.close()
+    def stringify_conversation(conversation):
+        ret = ''
+        for conv in conversation:
+            ret += f'[{conv}]\n'
+            for m in conversation[conv]:
+                is_user = (m.from_ == conv)
+                if not is_user:
+                    ret += '\033[1m'
+                ret += f'"{m.body}"\033[0m \n'
+        return ret
 
 
 if __name__ == '__main__':
@@ -71,6 +101,4 @@ if __name__ == '__main__':
         a.send_message(message, number)
 
     else:
-        messages = a.read_new_messages()
-        for m in messages:
-            a.print_message(m)
+        print(a.stringify_conversation(a.get_new_conversations()))

@@ -14,6 +14,8 @@ class Number():
             'TWILIO_REGION_CODE') + os.environ.get('TWILIO_NUMBER')
         self.target_number = target
 
+        self.dir_path = os.environ.get('HOME_DIR')
+
     def send_message(self, message_body, target_number=None):
         if target_number is None:
             target_number = self.target_number
@@ -47,24 +49,29 @@ class Number():
         for conv in conversations:
             if conv in seen and seen[conv] < len(conversations[conv]):
                 # show last three as well
+                # FIXME: doesn't work somehow? Just generally shows however many it wants to
                 processed_conversations[conv] = conversations[conv][seen[conv] - 3:]
         self.write_seen_conversations(conversations)
         return processed_conversations
 
     def write_seen_conversations(self, conversations):
-        with open('seen.txt', 'w') as f:
-            for c in conversations:
-                f.write(c + ', ' + str(len(conversations[c])))
+        with open(self.dir_path + '/seen.txt', 'w') as f:
+            f.write('\n'.join([c + ', ' + str(len(conversations[c]))
+                               for c in conversations]))
+            f.close()
 
     def read_seen_conversations(self):
-        with open('seen.txt', 'r') as f:
-            content = f.read().split('\n')
-            f.close()
-            num_conversations = {}
-            for line in content:
-                conv = line.split(', ')
-                num_conversations[conv[0]] = int(conv[1])
-            return num_conversations
+        try:
+            with open(self.dir_path + '/seen.txt', 'r') as f:
+                content = f.read().split('\n')
+                f.close()
+                num_conversations = {}
+                for line in content:
+                    conv = line.split(', ')
+                    num_conversations[conv[0]] = int(conv[1])
+                return num_conversations
+        except:
+            return {}
 
     @staticmethod
     def stringify_conversation(conversation):
@@ -86,19 +93,21 @@ if __name__ == '__main__':
         'REDIRECT_REGION_CODE') + os.environ.get('REDIRECT_NUMBER')
     a = Number(target_number)
 
-    if len(sys.argv) > 1:
-        args = sys.argv[1:]
-        number = None
-        message = ' '.join(args)
+    print(a.stringify_conversation(a.get_new_conversations()))
 
-        # check if first arg is a phone number...
-        if args[0][1:].isdigit() and len(args[0]) >= 10:
-            number = args[0]
-            message = ' '.join(args[1:])
-            if not number[0] is '+':
-                number = f'+1{number}'
+    # if len(sys.argv) > 1:
+    #     args = sys.argv[1:]
+    #     number = None
+    #     message = ' '.join(args)
 
-        a.send_message(message, number)
+    #     # check if first arg is a phone number...
+    #     if args[0][1:].isdigit() and len(args[0]) >= 10:
+    #         number = args[0]
+    #         message = ' '.join(args[1:])
+    #         if not number[0] is '+':
+    #             number = f'+1{number}'
 
-    else:
-        print(a.stringify_conversation(a.get_new_conversations()))
+    #     a.send_message(message, number)
+
+    # else:
+    #     print(a.stringify_conversation(a.get_new_conversations()))

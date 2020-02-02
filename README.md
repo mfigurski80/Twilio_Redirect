@@ -15,7 +15,7 @@ Additionally, you will need to configure a .env file in `<DIRECTORY>` that will 
 - `TWILIO_REGION_CODE`
 - `TARGET_NUMBER`
 - `TARGET_REGION_CODE`
-
+- `PATH`
 
 ## Terminal Use / Commands
 
